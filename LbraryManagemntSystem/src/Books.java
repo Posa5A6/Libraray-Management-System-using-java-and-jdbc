@@ -28,6 +28,7 @@ public class Books {
             }
 
             // Display the menu options
+            System.out.println("0. search book");
             System.out.println("1. Insert Book");
             System.out.println("2. Update Book");
             System.out.println("3. Delete Book");
@@ -39,6 +40,7 @@ public class Books {
             scanner.nextLine(); // Consume newline
 
             switch (choice) {
+                case 0 -> searchBook();
                 case 1 -> insertBook();
                 case 2 -> updateBook();
                 case 3 -> deleteBook();
@@ -142,6 +144,31 @@ public class Books {
             }
         }
     }
+void searchBook() throws SQLException {
+    try (Connection conn = getConnection()) {
+        System.out.print("Enter book name to search: ");
+        String bookName = scanner.nextLine();
+
+        String searchSQL = "SELECT * FROM books WHERE bookname LIKE ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(searchSQL)) {
+            pstmt.setString(1, "%" + bookName + "%");
+            try (ResultSet rs = pstmt.executeQuery()) {
+                boolean found = false;
+                while (rs.next()) {
+                    found = true;
+                    System.out.println("Book Name: " + rs.getString("bookname") +
+                                       ", Book ID: " + rs.getString("bookid") +
+                                       ", No. of Books: " + rs.getInt("noofbooks"));
+                }
+                if (!found) {
+                    System.out.println("No books found with that name.");
+                }
+            }
+        }
+    } catch (SQLException e) {
+        System.err.println("Error searching for book: " + e.getMessage());
+    }
+}
 
     void viewBooks() throws SQLException {
         try (Connection conn = getConnection();
